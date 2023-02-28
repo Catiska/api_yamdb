@@ -8,7 +8,7 @@ from rest_framework.pagination import PageNumberPagination
 
 from rest_framework import filters
 
-from reviews.models import Category, Genre, Title, GenreTitle
+from reviews.models import Category, Genre, Title, GenreTitle, User
 
 from api.serializers import CategorySerializer
 
