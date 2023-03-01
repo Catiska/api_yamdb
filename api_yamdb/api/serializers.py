@@ -1,10 +1,17 @@
 from datetime import datetime as dt
 from rest_framework import serializers
-from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 
-from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment
+from reviews.models import (Category, Genre, Title, GenreTitle, Review,
+                            Comment, User)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'role', 'bio',
+                  'email')
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -73,18 +80,24 @@ class TitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'genre', 'category', 'description', 'rating')
+        fields = ('id', 'name', 'year', 'genre', 'category', 'description',
+                  'rating')
 
 
 class TitleCreateOrUpdateSerializer(serializers.ModelSerializer):
-    genre = serializers.SlugRelatedField(many=True, slug_field='slug', queryset=Genre.objects.all())
-    rating = serializers.IntegerField(read_only=True, default=10)
-    category = serializers.SlugRelatedField(slug_field='slug', queryset=Category.objects.all())
+    genre = serializers.SlugRelatedField(many=True,
+                                         slug_field='slug',
+                                         queryset=Genre.objects.all())
+    rating = serializers.IntegerField(read_only=True,
+                                      default=10)
+    category = serializers.SlugRelatedField(slug_field='slug',
+                                            queryset=Category.objects.all())
 
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'genre', 'category', 'description', 'rating')
+        fields = ('id', 'name', 'year', 'genre', 'category', 'description',
+                  'rating')
 
     def create(self, validated_data):
         genres = validated_data.pop('genre')
@@ -97,5 +110,7 @@ class TitleCreateOrUpdateSerializer(serializers.ModelSerializer):
 
     def validate_year(self, value):
         if value > dt.now().year:
-            raise serializers.ValidationError('Год выхода не может превышать текущий год!')
+            raise serializers.ValidationError(
+                'Год выхода не может превышать текущий год!'
+            )
         return value

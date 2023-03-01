@@ -5,8 +5,12 @@ from rest_framework import mixins
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 
-from .serializers import ReviewSerializer, CommentSerializer, CategorySerializer, GenreSerializer, TitleSerializer, TitleCreateOrUpdateSerializer
-from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment, User
+from .serializers import (ReviewSerializer, CommentSerializer,
+                          CategorySerializer, GenreSerializer,
+                          TitleSerializer, TitleCreateOrUpdateSerializer,
+                          UserSerializer)
+from reviews.models import (Category, Genre, Title, GenreTitle, Review,
+                            Comment, User)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -58,7 +62,8 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     Вьюсет для модели User.
     """
-    pass
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
     
 
 class GenreViewSet(ListCreateDeleteViewSet):
