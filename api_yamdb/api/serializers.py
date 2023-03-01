@@ -11,7 +11,8 @@ class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор модели отзывов."""
     author = serializers.SlugRelatedField(
         slug_field='username',
-        default=serializers.CurrentUserDefault()
+        default=serializers.CurrentUserDefault(),
+        read_only=True
     )
 
     class Meta:
