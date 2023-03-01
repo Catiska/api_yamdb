@@ -1,53 +1,43 @@
 from rest_framework import permissions
 
 
-class IsAdmin(permissions.BasePermission):
+class IsAdminOrSuperuserOrReadOnly(permissions.BasePermission):
+    """
+    Права админа, суперюзера, только чтение.
+    """
     def has_permission(self, request, view):
         user = request.user
         return (
-            request.method in permissions.SAFE_METHODS
-            or user.is_authenticated
+            request.method in permissions.SAFE_METHODS or
+            user.is_authenticated
         )
 
     def has_object_permission(self, request, view, obj):
         user = request.user
         return (
-            request.method in permissions.SAFE_METHODS
-            or user.is_admin
-            and user.is_authenticated
+            request.method in permissions.SAFE_METHODS or
+            user.role == 'admin' or
+            user.is_superuser
         )
 
 
-class IsModerator(permissions.BasePermission):
+class IsAdminModerAuthorOrReadonly(permissions.BasePermission):
+    """
+    Права админа, модератора, автора.
+    """
     def has_permission(self, request, view):
         user = request.user
         return (
-            request.method in permissions.SAFE_METHODS
-            or user.is_authenticated
+            request.method in permissions.SAFE_METHODS or
+            user.is_authenticated
         )
 
     def has_object_permission(self, request, view, obj):
         user = request.user
         return (
-            request.method in permissions.SAFE_METHODS
-            or user.is_moderator
-            and user.is_authenticated
+            request.method in permissions.SAFE_METHODS or
+            user.is_superuser or
+            user.role == 'admin' or
+            user.role == 'moderator' or
+            user.user == obj.author
         )
-
-
-class IsAuthUser(permissions.BasePermission):
-    def has_permission(self, request, view):
-        user = request.user
-        return user.is_authenticated
-
-    def has_object_permission(self, request, view, obj):
-        user = request.user
-        return user == obj.author
-
-# Нужен ли вообще безопасный метод для всего ? что бы был просто ...
-# class ReadOnly(permissions.BasePermission):
-#     def has_permission(self, request, view):
-#         return request.method in permissions.SAFE_METHODS
-
-#     def has_object_permission(self, request, view, obj):
-#         return request.method in permissions.SAFE_METHODS

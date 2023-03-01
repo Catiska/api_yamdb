@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from .models import Review, Comment, Category, Genre, Title, GenreTitle
+from .models import User, Review, Comment, Category, Genre, Title, GenreTitle
+
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'username', 'email', 'role')
+    search_fields = ('username', 'email',)
+    ordering = ('email',)
 
 
 @admin.register(Review)
@@ -49,4 +56,3 @@ class GenreTitleAdmin(admin.ModelAdmin):
     list_display = ('pk', 'genre', 'title',)
     list_editable = ('genre', 'title',)
     empty_value_display = '-пусто-'
-

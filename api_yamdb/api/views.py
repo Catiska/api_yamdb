@@ -54,6 +54,13 @@ class CategoryViewSet(viewsets.ModelViewSet):
     search_fields = ('name',)
 
 
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    Вьюсет для модели User.
+    """
+    pass
+    
+
 class GenreViewSet(ListCreateDeleteViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
