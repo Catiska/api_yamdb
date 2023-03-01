@@ -1,8 +1,12 @@
+import re
+from rest_framework import serializers
+from rest_framework.relations import SlugRelatedField
+from rest_framework.validators import UniqueTogetherValidator
+from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
-from rest_framework import serializers
 
-from reviews.models import Review, Comment, Title
+from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -47,3 +51,9 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'author', 'text', 'pub_date', 'review')
         read_only_fields = ('author', 'review')
 
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = ('name', 'slug',)
