@@ -2,7 +2,9 @@ from django.urls import path, include
 
 from rest_framework import routers
 
-from .views import CategoryViewSet, ReviewViewSet, CommentViewSet, GenreViewSet, TitleViewSet
+from .views import (CategoryViewSet, ReviewViewSet, CommentViewSet,
+                    GenreViewSet, TitleViewSet, UserViewSet, GetTokenView,
+                    SignupView)
 
 app_name = 'api'
 
@@ -19,7 +21,10 @@ router_v1.register(
 )
 router_v1.register('genres', GenreViewSet)
 router_v1.register('titles', TitleViewSet)
+router_v1.register('users', UserViewSet, basename='users')
 
 urlpatterns = [
-    path('v1/', include(router_v1.urls))
+    path('v1/auth/token/', GetTokenView.as_view(), name='get_token'),
+    path('v1/', include(router_v1.urls)),
+    path('v1/auth/signup/', SignupView.as_view(), name='signup'),
 ]

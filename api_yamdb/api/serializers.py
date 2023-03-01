@@ -14,6 +14,21 @@ class UserSerializer(serializers.ModelSerializer):
                   'email')
 
 
+class GetTokenSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(required=True)
+    confirmation_code = serializers.CharField(required=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'confirmation_code')
+
+
+class SignupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'email')
+
+
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор модели отзывов."""
     author = serializers.SlugRelatedField(
@@ -52,6 +67,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор можели комментариев к отзыву."""
+
     class Meta:
         model = Comment
         fields = ('id', 'author', 'text', 'pub_date', 'review')
@@ -59,14 +75,12 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Category
         fields = ('name', 'slug',)
 
 
 class GenreSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Genre
         fields = ('name', 'slug',)
@@ -76,7 +90,6 @@ class TitleSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True)
     rating = serializers.IntegerField(read_only=True, default=10)
     category = CategorySerializer()
-
 
     class Meta:
         model = Title
@@ -93,7 +106,6 @@ class TitleCreateOrUpdateSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(slug_field='slug',
                                             queryset=Category.objects.all())
 
-
     class Meta:
         model = Title
         fields = ('id', 'name', 'year', 'genre', 'category', 'description',
@@ -105,7 +117,7 @@ class TitleCreateOrUpdateSerializer(serializers.ModelSerializer):
         for current_genre in genres:
             GenreTitle.objects.create(
                 genre=current_genre, title=title
-                )
+            )
         return title
 
     def validate_year(self, value):
