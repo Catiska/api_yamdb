@@ -1,19 +1,23 @@
-from pprint import pprint
-from django.urls import include, path
+from django.urls import path, include
+
 from rest_framework import routers
-from api.views import CategoryViewSet
+
+from .views import CategoryViewSet, ReviewViewSet, CommentViewSet
 
 app_name = 'api'
 
-router = routers.DefaultRouter()
-router.register('v1/categories', CategoryViewSet)
-# router.register('v1/groups', GroupViewSet)
-# router.register(r'v1/posts/(?P<post_id>\d+)/comments',
-#                 CommentViewSet, basename='comments')
-# router.register('v1/follow', FollowViewSet, basename='follow')
+router_v1 = routers.DefaultRouter()
+router_v1.register('categories', CategoryViewSet)
+router_v1.register(
+    r'titles/(?P<title_id>\d+)/reviews',
+    ReviewViewSet,
+    basename='reviews')
+router_v1.register(
+    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    CommentViewSet,
+    basename='comments'
+)
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('v1/', include(router_v1.urls))
 ]
-
-pprint(router.urls)
