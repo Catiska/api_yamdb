@@ -1,12 +1,11 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
 from rest_framework import filters
+from rest_framework import mixins
 
+from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
 
-from .serializers import ReviewSerializer, CommentSerializer, CategorySerializer
+from api.serializers import ReviewSerializer, CommentSerializer, CategorySerializer, GenreSerializer, TitleSerializer, TitleCreateOrUpdateSerializer
 from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment, User
 
 
@@ -41,11 +40,42 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, review=review)
 
 
+class ListCreateDeleteViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin,
+                              mixins.ListModelMixin, viewsets.GenericViewSet):
+    pass
+
+
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    pagination_class = PageNumberPagination
     lookup_field = 'slug'
     lookup_value_regex = "[-a-zA-Z0-9_]+"
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+
+
+class GenreViewSet(ListCreateDeleteViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    lookup_field = 'slug'
+    lookup_value_regex = "[-a-zA-Z0-9_]+"
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+
+
+# Необходимо добавлять rating.
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = (
+        'category__slug',
+        'genre__slug',
+        'name',
+        'year',
+    )
+
+    def get_serializer_class(self):
+        if self.action == 'create' or self.action == 'partial_update':
+            return TitleCreateOrUpdateSerializer
+        return TitleSerializer
