@@ -59,8 +59,8 @@ ROLE_CHOICES = (
 
 class User(AbstractUser):
 
-    username = models.CharField(
-        max_length=100,
+    username = models.SlugField(
+        max_length=150,
         unique=True,
         blank=False,
         null=False,
@@ -68,14 +68,14 @@ class User(AbstractUser):
 
     first_name = models.CharField(
         'Имя',
-        max_length=100,
+        max_length=150,
         blank=True,
         null=True,
     )
 
     last_name = models.CharField(
         'Фамилия',
-        max_length=100,
+        max_length=150,
         blank=True,
         null=True,
     )
