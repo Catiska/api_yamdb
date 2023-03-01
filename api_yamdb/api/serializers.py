@@ -5,8 +5,11 @@ from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 from django.core.files.base import ContentFile
+from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 
 from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор модели отзывов."""
@@ -30,7 +33,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """Проверка повторного отзыва к текущему произведению."""
         request = self.context['request']
-        # author = request.user
         title_id = self.context.get('view').kwargs.get('title_id')
         title = get_object_or_404(Title, pk=title_id)
         if (
@@ -48,7 +50,7 @@ class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор можели комментариев к отзыву."""
     class Meta:
         model = Comment
-        fields = '__all__'
+        fields = ('id', 'author', 'text', 'pub_date', 'review')
         read_only_fields = ('author', 'review')
 
 
