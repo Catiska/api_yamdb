@@ -1,9 +1,5 @@
-import re
-from django.core.exceptions import ValidationError
-from django.shortcuts import get_object_or_404
+from datetime import datetime as dt
 from rest_framework import serializers
-from rest_framework.relations import SlugRelatedField
-from rest_framework.validators import UniqueTogetherValidator
 from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
@@ -15,7 +11,8 @@ class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор модели отзывов."""
     author = serializers.SlugRelatedField(
         slug_field='username',
-        default=serializers.CurrentUserDefault()
+        default=serializers.CurrentUserDefault(),
+        read_only=True
     )
 
     class Meta:
@@ -61,4 +58,44 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('name', 'slug',)
 
 
+class GenreSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = Genre
+        fields = ('name', 'slug',)
+
+
+class TitleSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(many=True)
+    rating = serializers.IntegerField(read_only=True, default=10)
+    category = CategorySerializer()
+
+
+    class Meta:
+        model = Title
+        fields = ('id', 'name', 'year', 'genre', 'category', 'description', 'rating')
+
+
+class TitleCreateOrUpdateSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(many=True, slug_field='slug', queryset=Genre.objects.all())
+    rating = serializers.IntegerField(read_only=True, default=10)
+    category = serializers.SlugRelatedField(slug_field='slug', queryset=Category.objects.all())
+
+
+    class Meta:
+        model = Title
+        fields = ('id', 'name', 'year', 'genre', 'category', 'description', 'rating')
+
+    def create(self, validated_data):
+        genres = validated_data.pop('genre')
+        title = Title.objects.create(**validated_data)
+        for current_genre in genres:
+            GenreTitle.objects.create(
+                genre=current_genre, title=title
+                )
+        return title
+
+    def validate_year(self, value):
+        if value > dt.now().year:
+            raise serializers.ValidationError('Год выхода не может превышать текущий год!')
+        return value

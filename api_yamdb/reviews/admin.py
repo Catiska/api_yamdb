@@ -1,16 +1,13 @@
 from django.contrib import admin
 
-from .models import User
+from .models import User, Review, Comment, Category, Genre, Title, GenreTitle
 
 
-class Admin(admin.ModelAdmin):
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
     list_display = ('pk', 'username', 'email', 'role')
     search_fields = ('username', 'email',)
     ordering = ('email',)
-
-
-admin.site.register(Admin, User)
-from models import Review, Comment
 
 
 @admin.register(Review)
@@ -30,3 +27,32 @@ class CommentAdmin(admin.ModelAdmin):
     list_editable = ('text', 'review')
     empty_value_display = '-пусто-'
 
+
+@admin.register(Title)
+class TitleAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'name', 'year', 'category', 'description',)
+    list_editable = ('category',)
+    search_fields = ('name',)
+    list_filter = ('year', 'genre', 'category',)
+    empty_value_display = '-пусто-'
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'name', 'slug',)
+    search_fields = ('name',)
+    empty_value_display = '-пусто-'
+
+
+@admin.register(Genre)
+class GenreAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'name', 'slug',)
+    search_fields = ('name',)
+    empty_value_display = '-пусто-'
+
+
+@admin.register(GenreTitle)
+class GenreTitleAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'genre', 'title',)
+    list_editable = ('genre', 'title',)
+    empty_value_display = '-пусто-'
