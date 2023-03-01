@@ -1,10 +1,8 @@
 from datetime import datetime as dt
-
+from rest_framework import serializers
+from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
-
-from rest_framework import serializers
-
 
 from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment
 
