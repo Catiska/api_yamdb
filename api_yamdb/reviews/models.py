@@ -18,7 +18,7 @@ class Review(models.Model):
     title = models.ForeignKey(Title,
                               on_delete=models.CASCADE,
                               related_name='reviews')
-    pub_date = models.DateField('Дата публикации',
+    pub_date = models.DateTimeField('Дата публикации',
                                 auto_now_add=True)
 
     class Meta:
@@ -39,7 +39,7 @@ class Review(models.Model):
 class Comment(models.Model):
     """Модель комментария к отзыву."""
     text = models.CharField('Текст комментария', max_length=200)
-    pub_date = models.DateField('Дата публикации', auto_now_add=True)
+    pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
     review = models.ForeignKey(Review,
                                on_delete=models.CASCADE,
                                related_name='comments')
