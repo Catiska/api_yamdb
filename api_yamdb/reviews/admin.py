@@ -19,3 +19,4 @@ class CommentAdmin(admin.ModelAdmin):
     list_filter = ('pub_date',)
     list_editable = ('text', 'review')
     empty_value_display = '-пусто-'
+

@@ -1,8 +1,12 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
+from rest_framework import filters
 
-from serializers import ReviewSerializer, CommentSerializer
-from reviews.models import Review, Comment
+from .serializers import ReviewSerializer, CommentSerializer, CategorySerializer
+from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -33,3 +37,13 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         review = get_object_or_404(Review, id=self.kwargs.get('review_id'))
         serializer.save(author=self.request.user, review=review)
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    pagination_class = PageNumberPagination
+    lookup_field = 'slug'
+    lookup_value_regex = "[-a-zA-Z0-9_]+"
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
