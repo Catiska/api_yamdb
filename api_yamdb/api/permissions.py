@@ -3,7 +3,7 @@ from rest_framework import permissions
 
 class IsAdminOrSuperuserOrReadOnly(permissions.BasePermission):
     """
-    Права админа, суперюзера, тольео чтение.
+    Права админа, суперюзера, только чтение.
     """
     def has_permission(self, request, view):
         user = request.user
@@ -21,7 +21,7 @@ class IsAdminOrSuperuserOrReadOnly(permissions.BasePermission):
         )
 
 
-class IsAdminOrModeratirOrAuthor(permissions.BasePermission):
+class IsAdminModerAuthorOrReadonly(permissions.BasePermission):
     """
     Права админа, модератора, автора.
     """
