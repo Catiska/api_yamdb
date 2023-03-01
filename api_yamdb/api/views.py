@@ -21,3 +21,10 @@ class CategoryViewSet(viewsets.ModelViewSet):
     lookup_value_regex = "[-a-zA-Z0-9_]+"
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    Вьюсет для модели User.
+    """
+    

@@ -59,6 +59,27 @@ ROLE_CHOICES = (
 
 class User(AbstractUser):
 
+    username = models.CharField(
+        max_length=100,
+        unique=True,
+        blank=False,
+        null=False,
+    )
+
+    first_name = models.CharField(
+        'Имя',
+        max_length=100,
+        blank=True,
+        null=True,
+    )
+
+    last_name = models.CharField(
+        'Фамилия',
+        max_length=100,
+        blank=True,
+        null=True,
+    )
+
     role = models.CharField(
         'Роль',
         max_length=20,
@@ -66,7 +87,7 @@ class User(AbstractUser):
         default='user'
     )
     bio = models.TextField(
-        'Био',
+        'Биография',
         blank=True
     )
     email = models.EmailField(
@@ -84,11 +105,12 @@ class User(AbstractUser):
 
     class Meta:
         ordering = ['-id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['username', 'email'],
+                name='unique_constraint'
+            ),
+        ]
 
-    @property
-    def is_admin(self):
-        return self.role == "admin" or self.is_superuser
-
-    @property
-    def is_moderator(self):
-        return self.role == "moderator"
+    def __str__(self):
+        return self.username
