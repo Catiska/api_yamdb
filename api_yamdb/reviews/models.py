@@ -1,7 +1,9 @@
+import re
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 
 
 class Category(models.Model):
@@ -56,14 +58,24 @@ ROLE_CHOICES = (
     ('user', 'Пользователь'),
 )
 
+def validate_me(value):
+    if re.search('^me\Z', value):
+        raise ValidationError(f'username can\'t be {value}')
+
 
 class User(AbstractUser):
 
-    username = models.SlugField(
+    username = models.CharField(
         max_length=150,
         unique=True,
         blank=False,
         null=False,
+        validators=[
+            RegexValidator(
+                '^[\w.@+-]+\z', message='username must be ^[\w.@+-]+\Z', code='invalid_user'
+            ),
+            validate_me,
+        ]
     )
 
     first_name = models.CharField(
