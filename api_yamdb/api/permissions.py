@@ -39,5 +39,5 @@ class IsAdminModerAuthorOrReadonly(permissions.BasePermission):
             user.is_superuser or
             user.role == 'admin' or
             user.role == 'moderator' or
-            user.user == obj.author
+            user == obj.author
         )
