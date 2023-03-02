@@ -6,6 +6,7 @@ from rest_framework import mixins
 
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -15,7 +16,8 @@ from .permissions import (IsAdminOrSuperuserOrReadOnly,
 from .serializers import (ReviewSerializer, CommentSerializer,
                           CategorySerializer, GenreSerializer,
                           TitleSerializer, TitleCreateOrUpdateSerializer,
-                          UserSerializer, GetTokenSerializer, SignupSerializer)
+                          UserSerializer, GetTokenSerializer, SignupSerializer,
+                          GuestSerializer)
 from reviews.models import (Category, Genre, Title, GenreTitle, Review,
                             Comment, User)
 
@@ -45,13 +47,13 @@ class CommentViewSet(viewsets.ModelViewSet):
         review = get_object_or_404(Review, id=self.kwargs.get('review_id'))
         return review.comments.all()
 
-
     def perform_create(self, serializer):
         review = get_object_or_404(Review, id=self.kwargs.get('review_id'))
         serializer.save(author=self.request.user, review=review)
 
 
-class ListCreateDeleteViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin,
+class ListCreateDeleteViewSet(mixins.CreateModelMixin,
+                              mixins.DestroyModelMixin,
                               mixins.ListModelMixin, viewsets.GenericViewSet):
     pass
 
@@ -71,7 +73,33 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    
+    permission_classes = (IsAdminOrSuperuserOrReadOnly,)
+    lookup_field = 'username'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
+
+    http_method_names = ('get', 'post', 'delete', 'patch')
+
+    @action(methods=('GET', 'PATCH'),
+            detail=False,
+            permission_classes=permissions.IsAuthenticated,
+            url_path='me')
+    def get_me_info(self, request):
+        serializer = UserSerializer(request.user)
+        if request.method == 'PATCH':
+            if request.user.is_admin:
+                serializer = UserSerializer(request.user,
+                                            data=request.data,
+                                            partial=True)
+            else:
+                serializer = GuestSerializer(request.user,
+                                             data=request.data,
+                                             partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
+
 
 class GenreViewSet(ListCreateDeleteViewSet):
     queryset = Genre.objects.all()
@@ -103,6 +131,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class GetTokenView(APIView):
     """Получам JWT-токен в ответ на отправку POST-запроса
     по адресу /api/v1/auth/token/ с данными usernamr и confirmation_code."""
+
     def post(self, request):
         serializer = GetTokenSerializer(data=request.data)
         if not serializer.is_valid():
@@ -128,8 +157,8 @@ class SignupView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
-        email = serializer.validated_data.get['email']
-        username = serializer.validated_data.get['username']
+        email = serializer.data['email']
+        username = serializer.data['username']
         user, _ = User.objects.get_or_create(email=email, username=username)
         confirmation_code = default_token_generator.make_token(user)
         confirmation_message = f'Ваш код подтвержения {confirmation_code}'

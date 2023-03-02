@@ -1,4 +1,7 @@
 from datetime import datetime as dt
+
+from django.core.validators import EmailValidator, RegexValidator
+from django.db.models import Avg
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
@@ -8,6 +11,18 @@ from reviews.models import (Category, Genre, Title, GenreTitle, Review,
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор для пользователей."""
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'role', 'bio',
+                  'email')
+
+
+class GuestSerializer(serializers.ModelSerializer):
+    """Сериализатор для получения данных своей учетной записи."""
+    role = serializers.CharField(read_only=True)
+
     class Meta:
         model = User
         fields = ('username', 'first_name', 'last_name', 'role', 'bio',
@@ -15,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class GetTokenSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(required=True)
+    username = serializers.CharField(max_length=150, required=True)
     confirmation_code = serializers.CharField(required=True)
 
     class Meta:
@@ -24,9 +39,23 @@ class GetTokenSerializer(serializers.ModelSerializer):
 
 
 class SignupSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=150, required=True)
+    email = serializers.EmailField(max_length=254, required=True)
+
     class Meta:
         model = User
         fields = ('username', 'email')
+        validators = [EmailValidator, RegexValidator(
+            regex=r'^[\w.@+-]',
+            message='В имени пользователя использованы недопустимые символы')]
+
+    def validate_username(self, data):
+        name = data.lower()
+        if name == 'me':
+            raise ValidationError(
+                'Имя "me" зарезервировано, используйте другое'
+            )
+        return data
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -88,8 +117,15 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True)
-    rating = serializers.IntegerField(read_only=True, default=10)
-    category = CategorySerializer()
+    rating = serializers.SerializerMethodField('get_rating')
+    category = CategorySerializer(read_only=True, many=False)
+
+    def get_rating(self, obj):
+        reviews = Review.objects.filter(title=obj)
+        if len(reviews) == 0:
+            return None
+        rating = reviews.aggregate(Avg('score'))
+        return rating['score__avg']
 
     class Meta:
         model = Title

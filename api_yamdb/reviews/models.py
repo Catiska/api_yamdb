@@ -11,10 +11,16 @@ class Category(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название категории')
     slug = models.SlugField(unique=True, max_length=50, verbose_name='Слаг категории')
 
+    class Meta:
+        ordering = ('name',)
+
 
 class Genre(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название жанра')
     slug = models.SlugField(unique=True, max_length=50, verbose_name='Слаг жанра')
+
+    class Meta:
+        ordering = ('name',)
 
 
 class Title(models.Model):
@@ -30,6 +36,9 @@ class Title(models.Model):
         verbose_name='Категория'
     )
     description = models.TextField(blank=True, null=True, verbose_name='Описание')
+
+    class Meta:
+        ordering = ('-year',)
 
 
 class GenreTitle(models.Model):
