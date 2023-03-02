@@ -61,6 +61,7 @@ class ListCreateDeleteViewSet(mixins.CreateModelMixin,
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = (IsAdminOrSuperuserOrReadOnly,)
     lookup_field = 'slug'
     lookup_value_regex = "[-a-zA-Z0-9_]+"
     filter_backends = (filters.SearchFilter,)
@@ -104,6 +105,7 @@ class UserViewSet(viewsets.ModelViewSet):
 class GenreViewSet(ListCreateDeleteViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    permission_classes = (IsAdminOrSuperuserOrReadOnly,)
     lookup_field = 'slug'
     lookup_value_regex = "[-a-zA-Z0-9_]+"
     filter_backends = (filters.SearchFilter,)
@@ -114,6 +116,7 @@ class GenreViewSet(ListCreateDeleteViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
+    permission_classes = (IsAdminOrSuperuserOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = (
         'category__slug',

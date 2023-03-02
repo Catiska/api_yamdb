@@ -117,15 +117,8 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True)
-    rating = serializers.SerializerMethodField('get_rating')
+    rating = serializers.IntegerField(read_only=True)
     category = CategorySerializer(read_only=True, many=False)
-
-    def get_rating(self, obj):
-        reviews = Review.objects.filter(title=obj)
-        if len(reviews) == 0:
-            return None
-        rating = reviews.aggregate(Avg('score'))
-        return rating['score__avg']
 
     class Meta:
         model = Title
@@ -137,8 +130,7 @@ class TitleCreateOrUpdateSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(many=True,
                                          slug_field='slug',
                                          queryset=Genre.objects.all())
-    rating = serializers.IntegerField(read_only=True,
-                                      default=10)
+    rating = serializers.SerializerMethodField('get_rating')
     category = serializers.SlugRelatedField(slug_field='slug',
                                             queryset=Category.objects.all())
 
@@ -162,3 +154,10 @@ class TitleCreateOrUpdateSerializer(serializers.ModelSerializer):
                 'Год выхода не может превышать текущий год!'
             )
         return value
+
+    def get_rating(self, obj):
+        reviews = Review.objects.filter(title=obj)
+        if len(reviews) == 0:
+            return None
+        rating = reviews.aggregate(Avg('score'))
+        return rating['score__avg']

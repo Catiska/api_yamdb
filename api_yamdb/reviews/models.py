@@ -1,5 +1,9 @@
+import re
+
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -9,7 +13,8 @@ from django.dispatch import receiver
 
 class Category(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название категории')
-    slug = models.SlugField(unique=True, max_length=50, verbose_name='Слаг категории')
+    slug = models.SlugField(unique=True, max_length=50,
+                            verbose_name='Слаг категории')
 
     class Meta:
         ordering = ('name',)
@@ -17,14 +22,16 @@ class Category(models.Model):
 
 class Genre(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название жанра')
-    slug = models.SlugField(unique=True, max_length=50, verbose_name='Слаг жанра')
+    slug = models.SlugField(unique=True, max_length=50,
+                            verbose_name='Слаг жанра')
 
     class Meta:
         ordering = ('name',)
 
 
 class Title(models.Model):
-    name = models.CharField(max_length=256, verbose_name='Название произведения')
+    name = models.CharField(max_length=256,
+                            verbose_name='Название произведения')
     year = models.DateTimeField(verbose_name='Дата')
     genre = models.ManyToManyField(Genre, through='GenreTitle')
     category = models.ForeignKey(
@@ -35,10 +42,11 @@ class Title(models.Model):
         related_name='titles',
         verbose_name='Категория'
     )
-    description = models.TextField(blank=True, null=True, verbose_name='Описание')
+    description = models.TextField(blank=True, null=True,
+                                   verbose_name='Описание')
 
     class Meta:
-        ordering = ('-year',)
+        ordering = ('name',)
 
 
 class GenreTitle(models.Model):
@@ -55,7 +63,6 @@ class GenreTitle(models.Model):
         on_delete=models.SET_NULL
     )
 
-
     class Meta:
         constraints = [
             UniqueConstraint(fields=['genre', 'title'], name='genre_and_title')
@@ -69,10 +76,31 @@ ROLE_CHOICES = (
 )
 
 
-class User(AbstractUser):
+def validate_username(value):
+    if value == 'me':
+        raise ValidationError(
+            ('Имя пользователя не может быть <me>.'),
+            params={'value': value},
+        )
+    if re.search(r'^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$', value) is None:
+        raise ValidationError(
+            (f'Не допустимые символы <{value}> в нике.'),
+            params={'value': value},
+        )
 
+
+def not_me_username_validator(value):
+    """Запрещает использовать 'me' в качестве username."""
+    if value.lower() == "me":
+        raise ValidationError(
+            "Вы не можете использовать 'me' в качестве username."
+        )
+
+
+class User(AbstractUser):
     username = models.SlugField(
         max_length=150,
+        validators=(UnicodeUsernameValidator, not_me_username_validator),
         unique=True,
         blank=False,
         null=False,
@@ -126,7 +154,7 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
-        
+
     @property
     def is_admin(self):
         return self.role == "admin" or self.is_superuser
@@ -167,7 +195,7 @@ class Review(models.Model):
                               on_delete=models.CASCADE,
                               related_name='reviews')
     pub_date = models.DateTimeField('Дата публикации',
-                                auto_now_add=True)
+                                    auto_now_add=True)
 
     class Meta:
         ordering = ('-pub_date',)
