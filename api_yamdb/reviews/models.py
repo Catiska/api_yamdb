@@ -3,20 +3,27 @@ from django.db import models
 from django.db.models.constraints import UniqueConstraint
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-
 class Category(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название категории')
-    slug = models.SlugField(unique=True, max_length=50, verbose_name='Слаг категории')
+    slug = models.SlugField(
+        unique=True,
+        max_length=50,
+        verbose_name='Слаг категории',
+    )
 
 
 class Genre(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название жанра')
-    slug = models.SlugField(unique=True, max_length=50, verbose_name='Слаг жанра')
+    slug = models.SlugField(
+        unique=True,
+        max_length=50,
+        verbose_name='Слаг жанра',
+    )
 
 
 class Title(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название произведения')
-    year = models.DateTimeField(verbose_name='Дата')
+    year = models.IntegerField(verbose_name='Дата')
     genre = models.ManyToManyField(Genre, through='GenreTitle')
     category = models.ForeignKey(
         Category,
@@ -59,7 +66,7 @@ ROLE_CHOICES = (
 
 class User(AbstractUser):
 
-    username = models.SlugField(
+    username = models.CharField(
         max_length=150,
         unique=True,
         blank=False,

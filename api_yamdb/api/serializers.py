@@ -96,6 +96,11 @@ class TitleCreateOrUpdateSerializer(serializers.ModelSerializer):
         return title
 
     def validate_year(self, value):
-        if value > dt.now().year:
-            raise serializers.ValidationError('Год выхода не может превышать текущий год!')
+        if value > dt.now().year or value < 0:
+            raise serializers.ValidationError('Год выхода не может превышать текущий год или быть отрицательным!')
+        return value
+    
+    def validate_genre(self, value):
+        if not value:
+            raise serializers.ValidationError('Нельзя передавать пустой список жанров!')
         return value

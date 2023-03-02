@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework import filters
 from rest_framework import mixins
+from rest_framework import permissions
 
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
@@ -45,7 +46,7 @@ class ListCreateDeleteViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin,
     pass
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(ListCreateDeleteViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
@@ -72,6 +73,7 @@ class GenreViewSet(ListCreateDeleteViewSet):
 
 # Необходимо добавлять rating.
 class TitleViewSet(viewsets.ModelViewSet):
+
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
