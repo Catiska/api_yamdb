@@ -4,7 +4,16 @@ from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 
-from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment
+from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment, User
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+
+        class Meta:
+            model = User
+            fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role',)
+            # read_only_fields = ('author', 'title')
 
 
 class ReviewSerializer(serializers.ModelSerializer):
