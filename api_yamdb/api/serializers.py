@@ -45,9 +45,9 @@ class SignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email')
-        validators = [EmailValidator, RegexValidator(
-            regex=r'^[\w.@+-]',
-            message='В имени пользователя использованы недопустимые символы')]
+        # validators = [EmailValidator, RegexValidator(
+        #     regex=r'^[\\w.@+-]+\\Z',
+        #     message='В имени пользователя использованы недопустимые символы')]
 
     def validate_username(self, data):
         name = data.lower()
@@ -68,7 +68,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ('id', 'author', 'score', 'text', 'pub_date', 'title')
+        fields = '__all__'
         read_only_fields = ('author', 'title')
 
     def validate_score(self, score):
@@ -99,7 +99,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ('id', 'author', 'text', 'pub_date', 'review')
+        fields = '__all__'
         read_only_fields = ('author', 'review')
 
 

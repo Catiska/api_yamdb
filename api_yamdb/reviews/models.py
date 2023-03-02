@@ -82,11 +82,11 @@ def validate_username(value):
             ('Имя пользователя не может быть <me>.'),
             params={'value': value},
         )
-    if re.search(r'^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$', value) is None:
-        raise ValidationError(
-            (f'Не допустимые символы <{value}> в нике.'),
-            params={'value': value},
-        )
+    # if re.search(r'^[\\w.@+-]+\\Z', value) is None:
+    #     raise ValidationError(
+    #         (f'Не допустимые символы <{value}> в нике.'),
+    #         params={'value': value},
+    #     )
 
 
 def not_me_username_validator(value):
@@ -98,9 +98,10 @@ def not_me_username_validator(value):
 
 
 class User(AbstractUser):
-    username = models.SlugField(
+    username = models.CharField(
         max_length=150,
-        validators=(UnicodeUsernameValidator, not_me_username_validator),
+        validators=(not_me_username_validator,
+                    validate_username),
         unique=True,
         blank=False,
         null=False,
