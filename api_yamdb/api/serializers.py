@@ -4,7 +4,17 @@ from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 
-from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment
+from reviews.models import (
+    Category, Genre, Title, GenreTitle, Review, Comment, User)
+
+class UserSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели User.
+    """
+    class Meta:
+        model = User
+        required_fields = ('username', 'email',)
+        fields = '__all__'
 
 
 class ReviewSerializer(serializers.ModelSerializer):
