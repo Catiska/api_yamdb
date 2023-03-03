@@ -10,9 +10,9 @@ from django.db.models import Avg
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 
-from reviews.models import (Category, Genre, Title, GenreTitle, Review,
-                            Comment, User)
 
+from reviews.models import (
+    Category, Genre, Title, GenreTitle, Review, Comment, User)
 
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для пользователей."""
@@ -77,7 +77,15 @@ class SignupSerializer(serializers.ModelSerializer):
         if not email_check and username_check:
             raise ValidationError("Вы ввели неверную почту")
         return data
-        
+
+
+class MeSerializer(UserSerializer):
+    """
+    Сериализатор для профиля Users,
+    наследованный от модели UserSerializer.
+    """
+    role = serializers.CharField(read_only=True)
+
 
 
 class ReviewSerializer(serializers.ModelSerializer):

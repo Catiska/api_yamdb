@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 
 from rest_framework import viewsets, status, permissions
 from rest_framework import filters
+
 from rest_framework import mixins
 from rest_framework import permissions
 from rest_framework.decorators import action
@@ -11,69 +12,62 @@ from rest_framework.response import Response
 
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-from api.permissions import (IsAdminOrSuperuserOrReadOnly,
-                          IsAdminModerAuthorOrReadonly)
 from .serializers import (ReviewSerializer, CommentSerializer,
                           CategorySerializer, GenreSerializer,
                           TitleSerializer, TitleCreateOrUpdateSerializer,
                           UserSerializer, GetTokenSerializer, SignupSerializer,
-                          GuestSerializer)
-from reviews.models import (Category, Genre, Title, GenreTitle, Review,
-                            Comment, User)
+                          GuestSerializer, MeSerializer)
+                       
+from .permissions import (
+    IsAdminOrSuperuserOrReadOnly,
+    IsAdminModerAuthorOrReadonly
+)
+from .mixins import ListCreateDeleteViewSet
+from .models import Category, Genre, Title, GenreTitle, Review, Comment, User
 
 
-# class UserViewSet(viewsets.ModelViewSet):
-#     permission_classes = (IsAdminOrSuperuserOrReadOnly,)
-#     queryset = User.objects.all()
-#     serializer_class = UserSerializer
-#     lookup_field = 'username'
-#     # lookup_value_regex = "[\w.@+-]+"
-#     filter_backends = (filters.SearchFilter,)
-#     search_fields = ('username',)
 
-#     # @action(detail=True, url_path='users/me', methods=['get'], )
-#     # def get_my_profile(self, request, number):
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    Вьюсет для модели User.
+    Получение юзера или создание нового.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    filter_backends = (filters.SearchFilter,)
+    lookup_field = 'username'
+    lookup_value_regex = "[\w.@+-]+"
+    permission_classes = (IsAdminOrSuperuserOrReadOnly,)
+    search_fields = ('username',)
 
-#     #     def retrieve(self, request, *args, **kwargs):
-#     #         # instance = self.get_object()
-#     #         instance = get_object()
-#     #         serializer = self.get_serializer(instance)
-#     #         return Response(serializer.data)
-        
-#     #     def get_object():
-#     #         return User.objects.get(id=1)
-
-#         # def update(self, request, *args, **kwargs):
-#         #     partial = kwargs.pop('partial', False)
-#         #     instance = self.get_object()
-#         #     serializer = self.get_serializer(instance, data=request.data, partial=partial)
-#         #     serializer.is_valid(raise_exception=True)
-#         #     self.perform_update(serializer)
-
-#         #     if getattr(instance, '_prefetched_objects_cache', None):
-#         #         # If 'prefetch_related' has been applied to a queryset, we need to
-#         #         # forcibly invalidate the prefetch cache on the instance.
-#         #         instance._prefetched_objects_cache = {}
-
-#         #     return Response(serializer.data)
-
-#         # def perform_update(self, serializer):
-#         #     serializer.save()
-
-#         # def partial_update(self, request, *args, **kwargs):
-#         #     kwargs['partial'] = True
-#         #     return self.update(request, *args, **kwargs)
-
-#         # return retrieve(self, self.request)
-
-#         # posts = Post.objects.select_related('author', 'group').all().order_by('-pub_date')[:int(number)]
-#         # return detail(self, self.request, posts)
+    @action(
+        methods=['get', 'patch'],
+        url_path='me',
+        detail=False,
+        permission_classes=(IsAuthenticated)
+    )
+    def profile(self, request):
+        """
+        Функция получение, изменения
+        своей учетной записи.
+        """
+        user = request.user
+        if request.method != 'GET':
+            serializer = MeSerializer
+        serializer = MeSerializer(
+            user, request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -106,15 +100,11 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, review=review)
 
 
-class ListCreateDeleteViewSet(mixins.CreateModelMixin,
-                              mixins.DestroyModelMixin,
-                              mixins.ListModelMixin, viewsets.GenericViewSet):
-    pass
-
 
 class CategoryViewSet(ListCreateDeleteViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = (IsAdminOrSuperuserOrReadOnly,)
     lookup_field = 'slug'
     lookup_value_regex = "[-a-zA-Z0-9_]+"
     permission_classes = (IsAdminOrSuperuserOrReadOnly,)

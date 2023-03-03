@@ -6,6 +6,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
+
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.core.exceptions import ValidationError
 from django.db.models.signals import post_save
@@ -76,9 +77,7 @@ ROLE_CHOICES = (
     ('user', 'Пользователь'),
 )
 
-# def validate_me(value):
-#     if re.search('^me\Z', value):
-#         raise ValidationError(f'username can\'t be {value}')
+
 
 
 class User(AbstractUser):
@@ -87,9 +86,6 @@ class User(AbstractUser):
         unique=True,
         blank=False,
         null=False,
-        # validators=[
-        #     validate_me,
-        # ]
     )
 
     first_name = models.CharField(
