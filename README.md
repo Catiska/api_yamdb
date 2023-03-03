@@ -51,20 +51,47 @@
 
 
 ### Запуск проекта в dev-режиме
+Клонировать репозиторий и перейти в него в командной строке:
 
-- Клонировать репозиторий и перейти в него в командной строке:
-``` git clone <ссылка на репозиторий по ssh-ключу> ```
-``` cd api_final_yatube ```
-- Cоздать и активировать виртуальное окружение:
-``` python -m venv venv ```
-``` source venv/Script/activate```
-``` python -m pip install --upgrade pip ```
-- Установить зависимости из файла requirements.txt:
-``` pip install -r requirements.txt ```
-- Выполнить миграции:
-``` python manage.py migrate ```
-- Запустить проект:
-``` python manage.py runserver ```
+```
+git clone git@github.com:pyttho/api_final_yatube.git
+```
+
+```
+cd api_final_yatube
+```
+
+Cоздать и активировать виртуальное окружение:
+
+```
+python -m venv venv
+```
+
+```
+source venv/Script/activate
+```
+
+```
+python -m pip install --upgrade pip
+```
+
+Установить зависимости из файла requirements.txt:
+
+```
+pip install -r requirements.txt
+```
+
+Выполнить миграции:
+
+```
+python manage.py migrate
+```
+
+Запустить проект:
+
+```
+python manage.py runserver
+```
 
 После запуска сервера подробная документация доступна по адресу: http://localhost:8000/redoc/
 ### Авторы
