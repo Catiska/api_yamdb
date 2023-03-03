@@ -105,12 +105,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 
 DEFAULT_FROM_EMAIL = 'adminka@mail.com'
 
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
-
-EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-
-DEFAULT_FROM_EMAIL = 'adminka@mail.com'
-
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 3,

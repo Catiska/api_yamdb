@@ -1,8 +1,12 @@
 from datetime import datetime as dt
 
+import re
+
+from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
+
 from django.core.validators import EmailValidator, RegexValidator
 from django.db.models import Avg
-from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 
@@ -17,6 +21,16 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'first_name', 'last_name', 'role', 'bio',
                   'email')
+        
+    def validate_username(self, data):
+        if data == 'me':
+            raise ValidationError(
+                'Имя "me" зарезервировано, используйте другое'
+            )
+        if not re.search(r'^[\w.@+-]+\Z', data):
+            raise ValidationError('В имени пользователя использованы недопустимые символы')
+        return data
+
 
 
 class GuestSerializer(serializers.ModelSerializer):
@@ -39,23 +53,31 @@ class GetTokenSerializer(serializers.ModelSerializer):
 
 
 class SignupSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(max_length=150, required=True)
-    email = serializers.EmailField(max_length=254, required=True)
+    username = serializers.CharField(max_length=150, required=True)#, validators=[UniqueValidator(queryset=User.objects.all())])
+    email = serializers.EmailField(max_length=254, required=True)#, validators=[UniqueValidator(queryset=User.objects.all())])
 
     class Meta:
         model = User
         fields = ('username', 'email')
-        # validators = [EmailValidator, RegexValidator(
-        #     regex=r'^[\\w.@+-]+\\Z',
-        #     message='В имени пользователя использованы недопустимые символы')]
 
     def validate_username(self, data):
-        name = data.lower()
-        if name == 'me':
+        if data == 'me':
             raise ValidationError(
                 'Имя "me" зарезервировано, используйте другое'
             )
+        if not re.search(r'^[\w.@+-]+\Z', data):
+            raise ValidationError('В имени пользователя использованы недопустимые символы')
         return data
+    
+    def validate(self, data):
+        username_check = User.objects.filter(username=data.get('username'))
+        email_check = User.objects.filter(email=data.get('email'))
+        if email_check and not username_check:
+            raise ValidationError("Другой пользователь с такой почтой уже существует")
+        if not email_check and username_check:
+            raise ValidationError("Вы ввели неверную почту")
+        return data
+        
 
 
 class ReviewSerializer(serializers.ModelSerializer):

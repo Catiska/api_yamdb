@@ -1,5 +1,7 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
+from django.core.exceptions import ValidationError
+
 from rest_framework import viewsets, status, permissions
 from rest_framework import filters
 from rest_framework import mixins
@@ -14,7 +16,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .permissions import (IsAdminOrSuperuserOrReadOnly,
+
+from api.permissions import (IsAdminOrSuperuserOrReadOnly,
                           IsAdminModerAuthorOrReadonly)
 from .serializers import (ReviewSerializer, CommentSerializer,
                           CategorySerializer, GenreSerializer,
@@ -26,25 +29,25 @@ from reviews.models import (Category, Genre, Title, GenreTitle, Review,
 
 
 # class UserViewSet(viewsets.ModelViewSet):
-#     permission_classes = (permissions.AllowAny,)
+#     permission_classes = (IsAdminOrSuperuserOrReadOnly,)
 #     queryset = User.objects.all()
 #     serializer_class = UserSerializer
 #     lookup_field = 'username'
-#     lookup_value_regex = "[\w.@+-]+"
+#     # lookup_value_regex = "[\w.@+-]+"
 #     filter_backends = (filters.SearchFilter,)
 #     search_fields = ('username',)
 
-#     @action(detail=True, url_path='users/me', methods=['get'], )
-#     def get_my_profile(self, request, number):
+#     # @action(detail=True, url_path='users/me', methods=['get'], )
+#     # def get_my_profile(self, request, number):
 
-#         def retrieve(self, request, *args, **kwargs):
-#             # instance = self.get_object()
-#             instance = get_object()
-#             serializer = self.get_serializer(instance)
-#             return Response(serializer.data)
+#     #     def retrieve(self, request, *args, **kwargs):
+#     #         # instance = self.get_object()
+#     #         instance = get_object()
+#     #         serializer = self.get_serializer(instance)
+#     #         return Response(serializer.data)
         
-#         def get_object():
-#             return User.objects.get(id=1)
+#     #     def get_object():
+#     #         return User.objects.get(id=1)
 
 #         # def update(self, request, *args, **kwargs):
 #         #     partial = kwargs.pop('partial', False)
@@ -67,58 +70,10 @@ from reviews.models import (Category, Genre, Title, GenreTitle, Review,
 #         #     kwargs['partial'] = True
 #         #     return self.update(request, *args, **kwargs)
 
-#         return retrieve(self, self.request)
+#         # return retrieve(self, self.request)
 
 #         # posts = Post.objects.select_related('author', 'group').all().order_by('-pub_date')[:int(number)]
 #         # return detail(self, self.request, posts)
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    permission_classes = (permissions.AllowAny,)
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    lookup_field = 'username'
-    lookup_value_regex = "[\w.@+-]+"
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('username',)
-
-    @action(detail=True, url_path='users/me', methods=['get'], )
-    def get_my_profile(self, request, number):
-
-        def retrieve(self, request, *args, **kwargs):
-            # instance = self.get_object()
-            instance = get_object()
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-        
-        def get_object():
-            return User.objects.get(id=1)
-
-        # def update(self, request, *args, **kwargs):
-        #     partial = kwargs.pop('partial', False)
-        #     instance = self.get_object()
-        #     serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        #     serializer.is_valid(raise_exception=True)
-        #     self.perform_update(serializer)
-
-        #     if getattr(instance, '_prefetched_objects_cache', None):
-        #         # If 'prefetch_related' has been applied to a queryset, we need to
-        #         # forcibly invalidate the prefetch cache on the instance.
-        #         instance._prefetched_objects_cache = {}
-
-        #     return Response(serializer.data)
-
-        # def perform_update(self, serializer):
-        #     serializer.save()
-
-        # def partial_update(self, request, *args, **kwargs):
-        #     kwargs['partial'] = True
-        #     return self.update(request, *args, **kwargs)
-
-        return retrieve(self, self.request)
-
-        # posts = Post.objects.select_related('author', 'group').all().order_by('-pub_date')[:int(number)]
-        # return detail(self, self.request, posts)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -160,18 +115,18 @@ class ListCreateDeleteViewSet(mixins.CreateModelMixin,
 class CategoryViewSet(ListCreateDeleteViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminOrSuperuserOrReadOnly,)
     lookup_field = 'slug'
     lookup_value_regex = "[-a-zA-Z0-9_]+"
+    permission_classes = (IsAdminOrSuperuserOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
 
-# class UserViewSet(viewsets.ModelViewSet):
-#     """
-#     Вьюсет для модели User.
-#     """
-#     queryset = User.objects.all()
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    Вьюсет для модели User.
+    """
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdminOrSuperuserOrReadOnly,)
     lookup_field = 'username'
@@ -214,7 +169,7 @@ class GenreViewSet(ListCreateDeleteViewSet):
 # Необходимо добавлять rating.
 class TitleViewSet(viewsets.ModelViewSet):
 
-    queryset = Title.objects.all()
+    # queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrSuperuserOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
@@ -229,11 +184,23 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action == 'create' or self.action == 'partial_update':
             return TitleCreateOrUpdateSerializer
         return TitleSerializer
+    
+    def get_queryset(self):
+        if self.request.query_params.get('genre'):
+            objec = get_object_or_404(Genre, slug=self.request.query_params.get('genre'))
+            queryset = objec.title_set.all()
+        elif self.request.query_params.get('category'):
+            objec = get_object_or_404(Category, slug=self.request.query_params.get('category'))
+            queryset = objec.titles.all()
+        else:
+            queryset = Title.objects.all()
+        return queryset 
 
 
 class GetTokenView(APIView):
     """Получам JWT-токен в ответ на отправку POST-запроса
     по адресу /api/v1/auth/token/ с данными usernamr и confirmation_code."""
+    permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
         serializer = GetTokenSerializer(data=request.data)
@@ -260,10 +227,13 @@ class SignupView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
+        if serializer.data['username'] == 'me':
+            return Response(ValidationError("username не может быть me"),
+                     status=status.HTTP_400_BAD_REQUEST)
         email = serializer.data['email']
         username = serializer.data['username']
         user, _ = User.objects.get_or_create(email=email, username=username)
-        confirmation_code = default_token_generator.make_token(user)
+        confirmation_code = user.confirmation_code
         confirmation_message = f'Ваш код подтвержения {confirmation_code}'
         user.email_user(subject='Код подтверждения',
                         message=confirmation_message)
