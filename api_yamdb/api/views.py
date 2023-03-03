@@ -30,8 +30,7 @@ from .permissions import (
     IsAdminModerAuthorOrReadonly
 )
 from .mixins import ListCreateDeleteViewSet
-from .models import Category, Genre, Title, GenreTitle, Review, Comment, User
-
+from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment, User
 
 
 class UserViewSet(viewsets.ModelViewSet):
