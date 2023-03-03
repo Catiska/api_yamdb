@@ -94,7 +94,7 @@ python manage.py runserver
 ```
 
 После запуска сервера подробная документация доступна по адресу: http://localhost:8000/redoc/
-### Авторы
+### Команда разработки и авторы:
 - 🐱‍💻 Ростислав Житков (Teamlead) - [https://github.com/Zulusssss](https://github.com/Zulusssss)
 - 🐱‍👓 Екатерина Мындреско - [https://github.com/Catiska](https://github.com/Catiska)
 - 🐱‍👤 Манойлов Илья - [https://github.com/pyttho](https://github.com/pyttho)
