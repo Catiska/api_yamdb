@@ -150,6 +150,7 @@ class User(AbstractUser):
         return self.role == 'user'
 
 
+# По-моему, это уже мусор, был перенесен в метод
 @receiver(post_save, sender=User)
 def post_save(sender, instance, created, **kwargs):
     if created:
@@ -163,7 +164,7 @@ def post_save(sender, instance, created, **kwargs):
 class Review(models.Model):
     """Модель отзыва на произведение."""
     text = models.CharField('Текст отзыва', max_length=500)
-    score = models.IntegerField(
+    score = models.PositiveSmallIntegerField(
         'Оценка',
         validators=(
             MinValueValidator(1, 'Минимальная оценка - 1'),

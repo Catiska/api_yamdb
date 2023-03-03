@@ -18,19 +18,19 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-
 from .serializers import (ReviewSerializer, CommentSerializer,
                           CategorySerializer, GenreSerializer,
                           TitleSerializer, TitleCreateOrUpdateSerializer,
                           UserSerializer, GetTokenSerializer, SignupSerializer,
                           GuestSerializer, MeSerializer)
-                       
+
 from .permissions import (
     IsAdminOrSuperuserOrReadOnly,
     IsAdminModerAuthorOrReadonly
 )
 from .mixins import ListCreateDeleteViewSet
-from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment, User
+from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment, \
+    User
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -75,11 +75,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return get_object_or_404(
-            Review, id=self.kwargs.get('title_id')
+            Title, id=self.kwargs.get('title_id')
         ).reviews.all()
 
     def perform_create(self, serializer):
-        title = get_object_or_404(Review, id=self.kwargs.get('title_id'))
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
         serializer.save(
             author=self.request.user,
             title=title
@@ -99,14 +99,12 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, review=review)
 
 
-
 class CategoryViewSet(ListCreateDeleteViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrSuperuserOrReadOnly,)
     lookup_field = 'slug'
     lookup_value_regex = "[-a-zA-Z0-9_]+"
-    permission_classes = (IsAdminOrSuperuserOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
@@ -157,7 +155,6 @@ class GenreViewSet(ListCreateDeleteViewSet):
 
 # Необходимо добавлять rating.
 class TitleViewSet(viewsets.ModelViewSet):
-
     # queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrSuperuserOrReadOnly,)
@@ -173,17 +170,21 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action == 'create' or self.action == 'partial_update':
             return TitleCreateOrUpdateSerializer
         return TitleSerializer
-    
+
     def get_queryset(self):
         if self.request.query_params.get('genre'):
-            objec = get_object_or_404(Genre, slug=self.request.query_params.get('genre'))
+            objec = get_object_or_404(Genre,
+                                      slug=self.request.query_params.get(
+                                          'genre'))
             queryset = objec.title_set.all()
         elif self.request.query_params.get('category'):
-            objec = get_object_or_404(Category, slug=self.request.query_params.get('category'))
+            objec = get_object_or_404(Category,
+                                      slug=self.request.query_params.get(
+                                          'category'))
             queryset = objec.titles.all()
         else:
             queryset = Title.objects.all()
-        return queryset 
+        return queryset
 
 
 class GetTokenView(APIView):
@@ -218,7 +219,7 @@ class SignupView(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
         if serializer.data['username'] == 'me':
             return Response(ValidationError("username не может быть me"),
-                     status=status.HTTP_400_BAD_REQUEST)
+                            status=status.HTTP_400_BAD_REQUEST)
         email = serializer.data['email']
         username = serializer.data['username']
         user, _ = User.objects.get_or_create(email=email, username=username)

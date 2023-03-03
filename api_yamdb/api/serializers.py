@@ -95,18 +95,15 @@ class ReviewSerializer(serializers.ModelSerializer):
         default=serializers.CurrentUserDefault(),
         read_only=True
     )
+    title = serializers.SlugRelatedField(
+        slug_field='name',
+        read_only=True
+    )
 
     class Meta:
         model = Review
         fields = '__all__'
         read_only_fields = ('author', 'title')
-
-    def validate_score(self, score):
-        """Валидация введенной оценки."""
-        if 10 < score < 0:
-            raise ValidationError(
-                'Оценка произведения должна быть в диапазоне от 1 до 10 баллов'
-            )
 
     def validate(self, data):
         """Проверка повторного отзыва к текущему произведению."""
@@ -126,6 +123,8 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор можели комментариев к отзыву."""
+    author = serializers.SlugRelatedField(slug_field='username',
+                                          read_only=True)
 
     class Meta:
         model = Comment
@@ -147,7 +146,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True)
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.SerializerMethodField('get_rating')
     category = CategorySerializer(read_only=True, many=False)
 
     class Meta:
@@ -155,12 +154,16 @@ class TitleSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'year', 'genre', 'category', 'description',
                   'rating')
 
+    def get_rating(self, obj):
+        obj = obj.reviews.all().aggregate(rating=Avg('score'))
+        return obj['rating']
+
 
 class TitleCreateOrUpdateSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(many=True,
                                          slug_field='slug',
                                          queryset=Genre.objects.all())
-    rating = serializers.SerializerMethodField('get_rating')
+    rating = serializers.IntegerField(read_only=True)
     category = serializers.SlugRelatedField(slug_field='slug',
                                             queryset=Category.objects.all())
 
@@ -188,10 +191,3 @@ class TitleCreateOrUpdateSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError('Нельзя передавать пустой список жанров!')
         return value
-
-    def get_rating(self, obj):
-        reviews = Review.objects.filter(title=obj)
-        if len(reviews) == 0:
-            return None
-        rating = reviews.aggregate(Avg('score'))
-        return rating['score__avg']
