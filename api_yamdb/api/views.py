@@ -1,6 +1,7 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
 from django.core.exceptions import ValidationError
+from django.forms.models import model_to_dict
 
 from rest_framework import viewsets, status, permissions
 from rest_framework import filters
@@ -27,46 +28,11 @@ from .serializers import (ReviewSerializer, CommentSerializer,
                        
 from .permissions import (
     IsAdminOrSuperuserOrReadOnly,
-    IsAdminModerAuthorOrReadonly
+    IsAdminModerAuthorOrReadonly,
+    IsAdminOrSuperuser
 )
 from .mixins import ListCreateDeleteViewSet
 from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment, User
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    """
-    Вьюсет для модели User.
-    Получение юзера или создание нового.
-    """
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    filter_backends = (filters.SearchFilter,)
-    lookup_field = 'username'
-    lookup_value_regex = "[\w.@+-]+"
-    permission_classes = (IsAdminOrSuperuserOrReadOnly,)
-    search_fields = ('username',)
-
-    @action(
-        methods=['get', 'patch'],
-        url_path='me',
-        detail=False,
-        permission_classes=(IsAuthenticated)
-    )
-    def profile(self, request):
-        """
-        Функция получение, изменения
-        своей учетной записи.
-        """
-        user = request.user
-        if request.method != 'GET':
-            serializer = MeSerializer
-        serializer = MeSerializer(
-            user, request.data,
-            partial=True,
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -117,7 +83,7 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAdminOrSuperuserOrReadOnly,)
+    permission_classes = (IsAdminOrSuperuser,)
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
@@ -126,23 +92,18 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(methods=('GET', 'PATCH'),
             detail=False,
-            permission_classes=permissions.IsAuthenticated,
+            permission_classes=(permissions.IsAuthenticated,),
             url_path='me')
     def get_me_info(self, request):
-        serializer = UserSerializer(request.user)
-        if request.method == 'PATCH':
-            if request.user.is_admin:
-                serializer = UserSerializer(request.user,
-                                            data=request.data,
-                                            partial=True)
-            else:
-                serializer = GuestSerializer(request.user,
-                                             data=request.data,
-                                             partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.data)
+        if request.method == 'PATCH' and (request.user.is_admin or request.user.is_superuser):
+            serializer = UserSerializer(request.user, data=request.data, partial=True)
+        elif request.method == 'PATCH':
+            serializer = GuestSerializer(request.user, data=request.data, partial=True)
+        else:
+            serializer = GuestSerializer(request.user, data=model_to_dict(request.user),)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class GenreViewSet(ListCreateDeleteViewSet):

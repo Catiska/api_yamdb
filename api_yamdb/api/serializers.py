@@ -33,14 +33,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 
-class GuestSerializer(serializers.ModelSerializer):
+class GuestSerializer(UserSerializer):
     """Сериализатор для получения данных своей учетной записи."""
     role = serializers.CharField(read_only=True)
 
-    class Meta:
-        model = User
-        fields = ('username', 'first_name', 'last_name', 'role', 'bio',
-                  'email')
+    # class Meta:
+    #     model = User
+    #     fields = ('username', 'first_name', 'last_name', 'role', 'bio',
+    #               'email')
 
 
 class GetTokenSerializer(serializers.ModelSerializer):
