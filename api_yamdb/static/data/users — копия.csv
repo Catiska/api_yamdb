@@ -1,0 +1,6 @@
+id,password,last_login,is_superuser,is_staff,is_active,date_joined,username,first_name,last_name,role,bio,email,confirmation_code
+100,0,Null,1,0,1,,bingobongo,Null,Null,user,,bingobongo@yamdb.fake,Null
+101,0,Null,0,0,1,,capt_obvious,Null,Null,admin,,capt_obvious@yamdb.fake,Null
+102,0,Null,0,0,1,,faust,Null,Null,user,,faust@yamdb.fake,Null
+103,0,Null,0,0,1,,reviewer,Null,Null,user,,reviewer@yamdb.fake,Null
+104,0,Null,0,0,1,,angry,Null,Null,moderator,,angry@yamdb.fake,Null
