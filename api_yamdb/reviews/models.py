@@ -1,74 +1,7 @@
-import re
-
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
-
-from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
-from django.core.exceptions import ValidationError
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-
-
-class Category(models.Model):
-    name = models.CharField(max_length=256, verbose_name='Название категории')
-    slug = models.SlugField(unique=True, max_length=50,
-                            verbose_name='Слаг категории')
-
-    class Meta:
-        ordering = ('name',)
-
-
-
-class Genre(models.Model):
-    name = models.CharField(max_length=256, verbose_name='Название жанра')
-    slug = models.SlugField(unique=True, max_length=50,
-                            verbose_name='Слаг жанра')
-
-    class Meta:
-        ordering = ('name',)
-
-
-class Title(models.Model):
-    name = models.CharField(max_length=256, verbose_name='Название произведения')
-    year = models.IntegerField(verbose_name='Дата')
-    genre = models.ManyToManyField(Genre, through='GenreTitle')
-    category = models.ForeignKey(
-        Category,
-        # blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        related_name='titles',
-        verbose_name='Категория'
-    )
-    description = models.TextField(blank=True, null=True,
-                                   verbose_name='Описание')
-
-    class Meta:
-        ordering = ('name',)
-
-
-class GenreTitle(models.Model):
-    genre = models.ForeignKey(
-        Genre,
-        # blank=True,
-        null=True,
-        on_delete=models.SET_NULL
-    )
-    title = models.ForeignKey(
-        Title,
-        # blank=True,
-        null=True,
-        on_delete=models.SET_NULL
-    )
-
-    class Meta:
-        constraints = [
-            UniqueConstraint(fields=['genre', 'title'], name='genre_and_title')
-        ]
 
 
 ROLE_CHOICES = (
@@ -78,9 +11,8 @@ ROLE_CHOICES = (
 )
 
 
-
-
 class User(AbstractUser):
+    """Модель пользователя."""
     username = models.CharField(
         max_length=150,
         unique=True,
@@ -150,15 +82,69 @@ class User(AbstractUser):
         return self.role == 'user'
 
 
-# По-моему, это уже мусор, был перенесен в метод
-@receiver(post_save, sender=User)
-def post_save(sender, instance, created, **kwargs):
-    if created:
-        confirmation_code = default_token_generator.make_token(
-            instance
-        )
-        instance.confirmation_code = confirmation_code
-        instance.save()
+class Category(models.Model):
+    """Модель категорий для произведений."""
+    name = models.CharField(max_length=256,
+                            verbose_name='Название категории')
+    slug = models.SlugField(unique=True,
+                            max_length=50,
+                            verbose_name='Слаг категории')
+
+    class Meta:
+        ordering = ('name',)
+
+
+class Genre(models.Model):
+    """Модель жанров."""
+    name = models.CharField(max_length=256,
+                            verbose_name='Название жанра')
+    slug = models.SlugField(unique=True,
+                            max_length=50,
+                            verbose_name='Слаг жанра')
+
+    class Meta:
+        ordering = ('name',)
+
+
+class Title(models.Model):
+    """Модель произведения."""
+    name = models.CharField(max_length=256,
+                            verbose_name='Название произведения')
+    year = models.IntegerField(verbose_name='Дата')
+    genre = models.ManyToManyField(Genre, through='GenreTitle')
+    category = models.ForeignKey(
+        Category,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='titles',
+        verbose_name='Категория'
+    )
+    description = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='Описание')
+
+    class Meta:
+        ordering = ('name',)
+
+
+class GenreTitle(models.Model):
+    """Модель связи произведения и жанров."""
+    genre = models.ForeignKey(
+        Genre,
+        null=True,
+        on_delete=models.SET_NULL
+    )
+    title = models.ForeignKey(
+        Title,
+        null=True,
+        on_delete=models.SET_NULL
+    )
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['genre', 'title'], name='genre_and_title')
+        ]
 
 
 class Review(models.Model):
