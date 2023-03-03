@@ -14,7 +14,18 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         required_fields = ('username', 'email',)
-        fields = '__all__'
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role',
+        )
+
+
+class MeSerializer(UserSerializer):
+    """
+    Сериализатор для профиля Users,
+    наследованный от модели UserSerializer.
+    """
+    role = serializers.CharField(read_only=True)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
