@@ -1,6 +1,8 @@
 from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from django.core.exceptions import ValidationError
+
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -97,7 +99,10 @@ class SignupView(APIView):
         serializer = SignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.data['email']
-        username = validate_username(serializer.data['username'])
+        try: 
+            username = validate_username(serializer.data['username'])
+        except ValidationError as error:
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
         user, _ = User.objects.get_or_create(email=email, username=username)
         confirmation_code = user.confirmation_code
         confirmation_message = f'Ваш код подтверждения {confirmation_code}'

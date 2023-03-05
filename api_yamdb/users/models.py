@@ -2,10 +2,18 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 from .roles import UserRole
+from api.validators import validate_username
 
 
 class User(AbstractUser):
     """Модель пользователя."""
+    username = models.CharField( 
+        max_length=150,
+        unique=True,
+        blank=False,
+        null=False,
+        validators=[validate_username]
+    )
     role = models.CharField(
         'Роль',
         max_length=20,

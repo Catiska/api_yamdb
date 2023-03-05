@@ -6,6 +6,8 @@ from users.models import User
 
 from api_yamdb.settings import SYMBOLS_TO_SHOW
 
+from api.validators import validate_year, validate_genre
+
 
 class Category(models.Model):
     """Модель категорий для произведений."""
@@ -35,7 +37,7 @@ class Title(models.Model):
     """Модель произведения."""
     name = models.CharField(max_length=256,
                             verbose_name='Название произведения')
-    year = models.IntegerField(verbose_name='Дата')
+    year = models.IntegerField(verbose_name='Дата', validators=[validate_year, validate_genre])
     genre = models.ManyToManyField(Genre, through='GenreTitle')
     category = models.ForeignKey(
         Category,
