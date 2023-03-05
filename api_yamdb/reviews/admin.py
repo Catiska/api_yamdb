@@ -21,6 +21,10 @@ class CommentAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
+class GenreInline(admin.TabularInline):
+    model = Title.genre.through
+
+
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'year', 'category', 'description',)
@@ -28,6 +32,8 @@ class TitleAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     list_filter = ('year', 'genre', 'category',)
     empty_value_display = '-пусто-'
+    inlines = [GenreInline, ]
+    exclude = ('genre',)
 
 
 @admin.register(Category)
@@ -37,16 +43,12 @@ class CategoryAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-# class GenreInline(admin.TabularInline):
-#     model = Genre
-
-
 @admin.register(Genre)
 class GenreAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'slug',)
     search_fields = ('name',)
     empty_value_display = '-пусто-'
-    # inlines = [GenreInline, ]
+    inlines = [GenreInline, ]
 
 
 @admin.register(GenreTitle)
