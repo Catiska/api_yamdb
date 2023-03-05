@@ -8,13 +8,14 @@ class IsAdminOrSuperuserOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user
         return (request.method in permissions.SAFE_METHODS
-                or user.is_authenticated  # Проверка необходима по ТЗ
-                and (user.is_admin or user.is_superuser))
+                or user.is_admin
+                or user.is_superuser)
 
     def has_object_permission(self, request, view, obj):
         user = request.user
         return (request.method in permissions.SAFE_METHODS
-                or user.is_admin or user.is_superuser)
+                or user.is_admin
+                or user.is_superuser)
 
 
 class IsAdminOrSuperuser(permissions.BasePermission):
@@ -23,7 +24,8 @@ class IsAdminOrSuperuser(permissions.BasePermission):
 
     def has_permission(self, request, view):
         user = request.user
-        return user.is_authenticated and (user.is_admin or user.is_superuser)
+        return user.is_admin or user.is_superuser
+
 
     def has_object_permission(self, request, view, obj):
         user = request.user
@@ -33,11 +35,6 @@ class IsAdminOrSuperuser(permissions.BasePermission):
 class IsAdminModerAuthorOrReadonly(permissions.BasePermission):
     """Права админа, модератора, автора для добавления/редактирования
     отзывов и комментариев."""
-
-    def has_permission(self, request, view):
-        user = request.user
-        return (request.method in permissions.SAFE_METHODS
-                or user.is_authenticated)
 
     def has_object_permission(self, request, view, obj):
         user = request.user
