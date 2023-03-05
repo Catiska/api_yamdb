@@ -54,8 +54,10 @@ class SignupSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Проверка корректности email и запрет на повторную регистрацию."""
-        username_check = User.objects.filter(username=data.get('username'))
-        email_check = User.objects.filter(email=data.get('email'))
+        username_check = User.objects.filter(
+            username=data.get('username')).exists()
+        email_check = User.objects.filter(
+            email=data.get('email')).exists()
         if email_check and not username_check:
             raise ValidationError(
                 "Другой пользователь с такой почтой уже существует")
@@ -142,7 +144,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'score', 'pub_date', 'title')
         read_only_fields = ('author', 'title')
 
     def validate(self, data):

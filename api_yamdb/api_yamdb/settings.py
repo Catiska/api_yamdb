@@ -116,3 +116,5 @@ SIMPLE_JWT = {
 }
 
 AUTH_USER_MODEL = 'users.User'
+
+SYMBOLS_TO_SHOW = 30
