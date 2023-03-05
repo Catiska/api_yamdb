@@ -1,13 +1,6 @@
 from django.contrib import admin
 
-from .models import Category, Comment, Genre, GenreTitle, Review, Title, User
-
-
-@admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'username', 'email', 'role')
-    search_fields = ('username', 'email',)
-    ordering = ('email',)
+from .models import Category, Comment, Genre, GenreTitle, Review, Title
 
 
 @admin.register(Review)
@@ -28,6 +21,10 @@ class CommentAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
+class GenreInline(admin.TabularInline):
+    model = Title.genre.through
+
+
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'year', 'category', 'description',)
@@ -35,6 +32,8 @@ class TitleAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     list_filter = ('year', 'genre', 'category',)
     empty_value_display = '-пусто-'
+    inlines = [GenreInline, ]
+    exclude = ('genre',)
 
 
 @admin.register(Category)
@@ -49,6 +48,7 @@ class GenreAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'slug',)
     search_fields = ('name',)
     empty_value_display = '-пусто-'
+    inlines = [GenreInline, ]
 
 
 @admin.register(GenreTitle)
