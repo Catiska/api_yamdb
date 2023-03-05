@@ -17,10 +17,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('username', 'first_name', 'last_name', 'role', 'bio',
                   'email')
 
-    def validate_username(self, data):
-        """Проверка корректности username."""
-        return validate_username(data)
-
 
 class GuestSerializer(UserSerializer):
     """Сериализатор для получения данных своей учетной записи."""
@@ -48,9 +44,6 @@ class SignupSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'email')
 
-    def validate_username(self, data):
-        """Проверка корректности username."""
-        return validate_username(data)
 
     def validate(self, data):
         """Проверка корректности email и запрет на повторную регистрацию."""
@@ -121,14 +114,6 @@ class TitleCreateOrUpdateSerializer(serializers.ModelSerializer):
             )
         return title
 
-    def validate_year(self, value):
-        """Год выхода не может превышать текущий год или быть отрицательным."""
-        return validate_year(value)
-
-    def validate_genre(self, value):
-        """Нельзя выбрать несуществующий жанр."""
-        return validate_genre(value)
-
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор модели отзывов."""
@@ -170,5 +155,5 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'pub_date',)
         read_only_fields = ('author', 'review')
