@@ -1,85 +1,12 @@
-from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
 
+from users.models import User
 
-ROLE_CHOICES = (
-    ('admin', 'Администратор'),
-    ('moderator', 'Модератор'),
-    ('user', 'Пользователь'),
-)
+from api_yamdb.settings import SYMBOLS_TO_SHOW
 
-
-class User(AbstractUser):
-    """Модель пользователя."""
-    username = models.CharField(
-        max_length=150,
-        unique=True,
-        blank=False,
-        null=False,
-    )
-
-    first_name = models.CharField(
-        'Имя',
-        max_length=150,
-        blank=True,
-        null=True,
-    )
-
-    last_name = models.CharField(
-        'Фамилия',
-        max_length=150,
-        blank=True,
-        null=True,
-    )
-
-    role = models.CharField(
-        'Роль',
-        max_length=20,
-        choices=ROLE_CHOICES,
-        default='user'
-    )
-    bio = models.TextField(
-        'Биография',
-        blank=True
-    )
-    email = models.EmailField(
-        'Email',
-        max_length=254,
-        unique=True,
-        blank=False,
-        null=False
-    )
-    confirmation_code = models.CharField(
-        'Код подтверждения',
-        max_length=50,
-        null=True
-    )
-
-    class Meta:
-        ordering = ['-id']
-        constraints = [
-            models.UniqueConstraint(
-                fields=['username', 'email'],
-                name='unique_constraint'
-            ),
-        ]
-
-    def __str__(self):
-        return self.username
-
-    @property
-    def is_admin(self):
-        return self.role == "admin" or self.is_superuser
-
-    @property
-    def is_moderator(self):
-        return self.role == "moderator"
-
-    @property
-    def is_user(self):
-        return self.role == 'user'
+from api.validators import validate_year, validate_genre
 
 
 class Category(models.Model):
@@ -110,7 +37,10 @@ class Title(models.Model):
     """Модель произведения."""
     name = models.CharField(max_length=256,
                             verbose_name='Название произведения')
-    year = models.IntegerField(verbose_name='Дата')
+    year = models.IntegerField(
+        verbose_name='Дата',
+        validators=[validate_year, validate_genre]
+    )
     genre = models.ManyToManyField(Genre, through='GenreTitle')
     category = models.ForeignKey(
         Category,
@@ -178,7 +108,7 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return self.text[:30]
+        return self.text[:SYMBOLS_TO_SHOW]
 
 
 class Comment(models.Model):
@@ -198,4 +128,4 @@ class Comment(models.Model):
         verbose_name_plural = 'Комментарии'
 
     def __str__(self):
-        return self.text[:15]
+        return self.text[:SYMBOLS_TO_SHOW]

@@ -1,10 +1,11 @@
-import csv, sqlite3
+import csv
+import sqlite3
 from django.core.management.base import BaseCommand
-from reviews.models import *
 
 from api_yamdb.settings import BASE_DIR
 
 from pathlib import Path
+
 
 class Command(BaseCommand):
     """
@@ -25,12 +26,21 @@ class Command(BaseCommand):
         con = sqlite3.connect("db.sqlite3")
         cur = con.cursor()
 
-        for k in range(0,len(NAME)):
-            with open(f'static/data/{NAME[k]}.csv','r', encoding='utf-8') as fin:
+        for k in range(0, len(NAME)):
+            with open(f'static/data/{NAME[k]}.csv', 'r',
+                      encoding='utf-8') as fin:
                 dr = csv.DictReader(fin)
                 to_db = [tuple(i.values()) for i in dr]
-
-            cur.executemany(f"INSERT INTO reviews_{NAME[k]} {tuple(dr.fieldnames)} VALUES (" + "?, "*(len(dr.fieldnames)-1) + "?);", to_db)
+            if NAME[k] != 'user':
+                cur.executemany(f"INSERT INTO reviews_{NAME[k]} "
+                                f"{tuple(dr.fieldnames)} VALUES ("
+                                "?, " * (len(dr.fieldnames) - 1) + "?);",
+                                to_db)
+            else:
+                cur.executemany(f"INSERT INTO users_{NAME[k]} "
+                                f"{tuple(dr.fieldnames)} VALUES ("
+                                "?, " * (len(dr.fieldnames) - 1) + "?);",
+                                to_db)
             con.commit()
 
         con.close()
