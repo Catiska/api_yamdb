@@ -130,7 +130,6 @@ class GenreViewSet(ListCreateDeleteViewSet):
     serializer_class = GenreSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrSuperuserOrReadOnly,)
     lookup_field = 'slug'
-    lookup_field = 'slug'
     lookup_value_regex = "[-a-zA-Z0-9_]+"
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
