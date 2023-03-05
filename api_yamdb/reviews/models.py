@@ -37,7 +37,10 @@ class Title(models.Model):
     """Модель произведения."""
     name = models.CharField(max_length=256,
                             verbose_name='Название произведения')
-    year = models.IntegerField(verbose_name='Дата', validators=[validate_year, validate_genre])
+    year = models.IntegerField(
+        verbose_name='Дата',
+        validators=[validate_year, validate_genre]
+    )
     genre = models.ManyToManyField(Genre, through='GenreTitle')
     category = models.ForeignKey(
         Category,

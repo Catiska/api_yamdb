@@ -7,7 +7,7 @@ from api.validators import validate_username
 
 class User(AbstractUser):
     """Модель пользователя."""
-    username = models.CharField( 
+    username = models.CharField(
         max_length=150,
         unique=True,
         blank=False,

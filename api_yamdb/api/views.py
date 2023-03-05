@@ -8,7 +8,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
@@ -99,7 +100,7 @@ class SignupView(APIView):
         serializer = SignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.data['email']
-        try: 
+        try:
             username = validate_username(serializer.data['username'])
         except ValidationError as error:
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
@@ -117,7 +118,8 @@ class CategoryViewSet(ListCreateDeleteViewSet):
     """Вьюсет для модели категорий."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrSuperuserOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          IsAdminOrSuperuserOrReadOnly,)
     lookup_field = 'slug'
     lookup_value_regex = "[-a-zA-Z0-9_]+"
     filter_backends = (filters.SearchFilter,)
@@ -128,7 +130,8 @@ class GenreViewSet(ListCreateDeleteViewSet):
     """Миксины и вьюсет для модели жанров."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrSuperuserOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          IsAdminOrSuperuserOrReadOnly,)
     lookup_field = 'slug'
     lookup_value_regex = "[-a-zA-Z0-9_]+"
     filter_backends = (filters.SearchFilter,)
@@ -139,7 +142,8 @@ class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели произведений."""
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrSuperuserOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          IsAdminOrSuperuserOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
@@ -152,7 +156,8 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели отзывов."""
     serializer_class = ReviewSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminModerAuthorOrReadonly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          IsAdminModerAuthorOrReadonly,)
 
     def get_queryset(self):
         return get_object_or_404(
@@ -170,7 +175,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели комментариев."""
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminModerAuthorOrReadonly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          IsAdminModerAuthorOrReadonly,)
 
     def get_queryset(self):
         review = get_object_or_404(Review, id=self.kwargs.get('review_id'))

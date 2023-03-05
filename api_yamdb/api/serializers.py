@@ -6,7 +6,6 @@ from rest_framework import serializers
 from reviews.models import (Category, Comment, Genre, GenreTitle, Review,
                             Title)
 from users.models import User
-from .validators import validate_username, validate_year, validate_genre
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -43,7 +42,6 @@ class SignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email')
-
 
     def validate(self, data):
         """Проверка корректности email и запрет на повторную регистрацию."""
