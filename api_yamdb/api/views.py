@@ -1,18 +1,22 @@
+from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ValidationError
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from django.core.exceptions import ValidationError
 
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
-
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
+
+from .filters import TitleFilter
 from .mixins import ListCreateDeleteViewSet
 from .permissions import (IsAdminModerAuthorOrReadonly, IsAdminOrSuperuser,
                           IsAdminOrSuperuserOrReadOnly)
@@ -22,12 +26,6 @@ from .serializers import (CategorySerializer, CommentSerializer,
                           TitleCreateOrUpdateSerializer, TitleSerializer,
                           UserSerializer)
 from .validators import validate_username
-from .filters import TitleFilter
-
-
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.contrib.auth.tokens import default_token_generator
 
 
 class UserViewSet(viewsets.ModelViewSet):
