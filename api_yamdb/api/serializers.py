@@ -113,7 +113,7 @@ class TitleCreateOrUpdateSerializer(serializers.ModelSerializer):
             )
         return title
 
-    def validate_genre(selv,value):
+    def validate_genre(selv, value):
         return validate_genre(value)
 
 
