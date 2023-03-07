@@ -6,6 +6,7 @@ from rest_framework import serializers
 from reviews.models import (Category, Comment, Genre, GenreTitle, Review,
                             Title)
 from users.models import User
+from .validators import validate_genre
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -111,6 +112,9 @@ class TitleCreateOrUpdateSerializer(serializers.ModelSerializer):
                 genre=current_genre, title=title
             )
         return title
+
+    def validate_genre(selv,value):
+        return validate_genre(value)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
