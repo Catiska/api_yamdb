@@ -9,28 +9,35 @@ from api_yamdb.settings import SYMBOLS_TO_SHOW
 from api.validators import validate_year, validate_genre
 
 
-class Category(models.Model):
-    """Модель категорий для произведений."""
-    name = models.CharField(max_length=256,
-                            verbose_name='Название категории')
-    slug = models.SlugField(unique=True,
-                            max_length=50,
-                            verbose_name='Слаг категории')
+class CategoryGenre(models.Model):
+    """
+    Абстрактная модель для таблиц:
+    Жанры и Категории.
+    """
+    name = models.CharField(max_length=256)
+    slug = models.SlugField(unique=True, max_length=50)
+
+    class Meta:
+        abstract = True
+
+
+class Category(CategoryGenre):
 
     class Meta:
         ordering = ('name',)
+        verbose_name = 'Категория'
 
+    def __str__(self):
+        return self.name
 
-class Genre(models.Model):
-    """Модель жанров."""
-    name = models.CharField(max_length=256,
-                            verbose_name='Название жанра')
-    slug = models.SlugField(unique=True,
-                            max_length=50,
-                            verbose_name='Слаг жанра')
+class Genre(CategoryGenre):
 
     class Meta:
         ordering = ('name',)
+        verbose_name = 'Жанр'
+
+    def __str__(self):
+        return self.name
 
 
 class Title(models.Model):
@@ -39,7 +46,7 @@ class Title(models.Model):
                             verbose_name='Название произведения')
     year = models.IntegerField(
         verbose_name='Дата',
-        validators=[validate_year, validate_genre]
+        validators=[validate_year,]
     )
     genre = models.ManyToManyField(Genre, through='GenreTitle')
     category = models.ForeignKey(
